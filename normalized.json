@@ -1,0 +1,31 @@
+{
+  "HMI_ID": "HMI_0001A",
+  "HMI_Timestamp": 1740474880,
+  "lat": "24.1795",
+  "lng": "82.642667",
+  "rssi": 15,
+  "spd_gps": 55,
+  "HMI_tripId": 453434543,
+  "HMI_trip_status": 1,
+  "spd_wire": 60,
+  "device_id": "DMS_0001A",
+  "device_type": "DMS",
+  "device_trip_status": 1,
+  "device_trip_id": 345343453,
+  "device_timestamp": 17404747800,
+  "igs": 1,
+  "msg_no": 5,
+  "event": "NTF",
+  "subevent": "TAL",
+  "severity": "HIGH",
+  "reason": "High speed Tailgating",
+  "event_status": 1,
+  "driver_id": "swdf3453fc",
+  "driver_status": 1,
+  "device_data": {},
+  "media": {
+    "dashCam": "",
+    "inCabin": "",
+    "image": ""
+  }
+}

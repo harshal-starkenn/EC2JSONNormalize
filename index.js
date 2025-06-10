@@ -1,7 +1,15 @@
 const { client } = require("./mqtt");
 const { jsonNormalization } = require("./normalized");
+const { setRedisData, getRedisData, deleteRedisData } = require("./redisCrud");
 const { sendNormalizedJsonToAwsIotCore } = require("./sendiotcore");
 
+const express = require("express");
+const app = express();
+const port = 5001;
+
+app.use(express.json());
+
+// mqtt connection
 const mqttTrigger = () => {
   client.on("connect", () => {
     console.log("Connected to MQTT!");
@@ -14,6 +22,7 @@ const mqttTrigger = () => {
     });
   });
 
+  //mqtt message sent to iotcore
   client.on("message", async (topic, message) => {
     try {
       if (message) {
@@ -37,3 +46,56 @@ const mqttTrigger = () => {
 };
 
 mqttTrigger();
+
+//api to setData in redis server
+app.post("/set-redis-data", async (req, res) => {
+  const { key, data } = req.body;
+
+  try {
+    const result = await setRedisData(key, data);
+    res.status(200).json({
+      message: `JSON data for key "${key}" set successfully.`,
+      redisResponse: result,
+    });
+  } catch (err) {
+    console.log("Failed to set data in redis server!!");
+    res
+      .status(500)
+      .json({ message: "Failed to set data in redis!!", error: err });
+  }
+});
+
+// Api to get data by key
+app.get("/get-redis-data/:key", async (req, res) => {
+  const { key } = req.params;
+  try {
+    const result = await getRedisData(key);
+    res.status(200).json({ message: "Successfully got data::", data: result });
+  } catch (err) {
+    console.log("Failed to get data from redis server!!");
+    res
+      .status(500)
+      .json({ message: "Failed to get data in redis!!", error: err });
+  }
+});
+
+//Api to delete data from Redis
+
+app.delete("/delete-redis-data/:key", async (req, res) => {
+  const { key } = req.params;
+  try {
+    const result = await deleteRedisData(key);
+    res
+      .status(200)
+      .json({ message: "Successfully delete data::", data: result });
+  } catch (err) {
+    console.log("Failed to delete data from redis server!!");
+    res
+      .status(500)
+      .json({ message: "Failed to delete data in redis!!", error: err });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`);
+});

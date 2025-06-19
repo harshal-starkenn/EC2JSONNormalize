@@ -59,6 +59,7 @@ const jsonNormalization = (
       inCabin: "",
       image: "",
     },
+    JSON_DUMP: JSON.stringify(msg),
   };
 
   //////////////////////////////////   ALM   /////////////////////////////////////////////////////

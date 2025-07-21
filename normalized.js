@@ -1,11 +1,4 @@
-const jsonNormalization = (
-  msg,
-  HMI_ID = "HMI_0001A",
-  HMI_Timestamp = Math.floor(Date.now() / 1000),
-  rssi = 15,
-  HMI_tripId = "00001",
-  HMI_trip_status = 1
-) => {
+const jsonNormalization = (msg) => {
   msg = JSON.parse(msg);
 
   if (
@@ -27,17 +20,18 @@ const jsonNormalization = (
 
   // Variable for checking device type
   const isCADevice = msg.device_id.startsWith("E");
+  // Variable for checking device type  const isCADevice = msg.device_id.startsWith("E");
 
   //Normalized JSON Format
   let normalizedJSON = {
     HMI_ID: msg.device_id || "HMI_0001A",
-    HMI_Timestamp: HMI_Timestamp || "1672511400",
+    HMI_Timestamp: msg?.timestamp || "1672511400",
     lat: msg?.td?.lat || "18.55390",
     lng: msg?.td?.lng || "73.80675",
-    rssi: rssi || "0",
+    rssi: msg?.td?.rssi || 0,
     spd_gps: msg?.td?.spd || "0",
-    HMI_tripId: HMI_tripId || "0001",
-    HMI_trip_status: HMI_trip_status || "0",
+    HMI_tripId: msg?.trip_id || "0001",
+    HMI_trip_status: msg?.trip_id ? "1" : "0" || "0",
     spd_wire: msg?.data?.speed || "0",
     device_id: msg?.device_id || "DMS_0001A",
     device_type: isCADevice ? "CAS" : "DMS" || "SINGLE_IoT",
@@ -53,7 +47,7 @@ const jsonNormalization = (
     event_status: "0",
     driver_id: "0",
     driver_status: "1",
-    device_data: {},
+    device_data: msg?.data || {},
     media: {
       dashCam: "",
       inCabin: "",
@@ -68,7 +62,7 @@ const jsonNormalization = (
     if (msg?.data?.alarm === 3) {
       //ALARM 3
       normalizedJSON.subevent = "ALM3";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "MEDIUM";
       normalizedJSON.reason = "ALARM 3";
       normalizedJSON.device_data = msg?.data || {};
       normalizedJSON.spd_wire = msg?.data.speed;
@@ -78,7 +72,7 @@ const jsonNormalization = (
     } else if (msg?.data?.alarm === 2) {
       //ALARM 2
       normalizedJSON.subevent = "ALM2";
-      normalizedJSON.severity = "MEDIUM";
+      normalizedJSON.severity = "LOW";
       normalizedJSON.reason = "ALARM 2";
       normalizedJSON.device_data = msg?.data || {};
       normalizedJSON.spd_wire = msg?.data.speed;
@@ -166,7 +160,7 @@ const jsonNormalization = (
     if (msg.notification == 1) {
       //Safe Zone
       normalizedJSON.subevent = "SAF";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "LOW";
       normalizedJSON.event_status = msg?.notification;
       normalizedJSON.spd_wire = msg?.speed;
 
@@ -174,7 +168,7 @@ const jsonNormalization = (
     } else if (msg.notification == 2) {
       //Harsh Acceleration
       normalizedJSON.subevent = "HRA";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "LOW";
       normalizedJSON.event_status = msg?.notification;
       normalizedJSON.spd_wire = msg?.speed;
 
@@ -182,7 +176,7 @@ const jsonNormalization = (
     } else if (msg.notification == 3) {
       //Sudden Braking
       normalizedJSON.subevent = "SUB";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "LOW";
       normalizedJSON.event_status = msg?.notification;
       normalizedJSON.spd_wire = msg?.speed;
 
@@ -190,7 +184,7 @@ const jsonNormalization = (
     } else if (msg.notification == 4) {
       //Speed Bump
       normalizedJSON.subevent = "SPB";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "LOW";
       normalizedJSON.event_status = msg?.notification;
       normalizedJSON.spd_wire = msg?.speed;
 
@@ -198,7 +192,7 @@ const jsonNormalization = (
     } else if (msg.notification == 5) {
       //Lane Change
       normalizedJSON.subevent = "LCH";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "LOW";
       normalizedJSON.event_status = msg?.notification;
       normalizedJSON.spd_wire = msg?.speed;
 
@@ -206,7 +200,7 @@ const jsonNormalization = (
     } else if (msg.notification == 6) {
       //Tailgating
       normalizedJSON.subevent = "TAL";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "MEDIUM";
       normalizedJSON.event_status = msg?.notification;
       normalizedJSON.spd_wire = msg?.speed;
 
@@ -214,7 +208,7 @@ const jsonNormalization = (
     } else if (msg.notification == 7) {
       //CAS Overspeed
       normalizedJSON.subevent = "CAO";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "LOW";
       normalizedJSON.event_status = msg?.notification;
       normalizedJSON.spd_wire = msg?.speed;
 
@@ -268,7 +262,7 @@ const jsonNormalization = (
     //DMS Alert distribution
     if (msg.data.alert_type == "OVERSPEEDING") {
       normalizedJSON.subevent = "DMSO";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "MEDIUM";
       normalizedJSON.spd_wire = msg?.data?.speed;
       normalizedJSON.device_data = msg?.data || {};
       normalizedJSON.media.dashCam = msg?.data?.dashcam;
@@ -277,7 +271,7 @@ const jsonNormalization = (
       return JSON.stringify(normalizedJSON);
     } else if (msg.data.alert_type == "DISTRACTION") {
       normalizedJSON.subevent = "DIS";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "MEDIUM";
       normalizedJSON.spd_wire = msg?.data?.speed;
       normalizedJSON.device_data = msg?.data || {};
       normalizedJSON.media.dashCam = msg?.data?.dashcam;
@@ -331,7 +325,7 @@ const jsonNormalization = (
     } else if (msg.data.result == 1) {
       //alcohol Pass
       normalizedJSON.subevent = "ALCP";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "LOW";
       normalizedJSON.event_status = msg?.data?.result;
       normalizedJSON.spd_wire = msg?.data?.speed;
       normalizedJSON.media.inCabin = msg?.data?.vid_url;
@@ -341,7 +335,7 @@ const jsonNormalization = (
     } else if (msg.dataresult == 3) {
       //alcohol Timeout
       normalizedJSON.subevent = "ALCT";
-      normalizedJSON.severity = "HIGH";
+      normalizedJSON.severity = "MEDIUM";
       normalizedJSON.event_status = msg?.data?.result;
       normalizedJSON.spd_wire = msg?.data?.speed;
       normalizedJSON.media.inCabin = msg?.data?.vid_url;
@@ -354,7 +348,7 @@ const jsonNormalization = (
   else if (msg.event == "BYP") {
     //Indicator based Brake Bypass
     normalizedJSON.subevent = "BYP";
-    normalizedJSON.severity = "HIGH";
+    normalizedJSON.severity = "LOW";
     normalizedJSON.event_status = msg?.data?.status;
     normalizedJSON.device_data = msg?.data;
     normalizedJSON.spd_wire = msg?.speed;
@@ -365,7 +359,7 @@ const jsonNormalization = (
   else if (msg.event == "CVN") {
     //CVN DATA
     normalizedJSON.subevent = "CVN";
-    normalizedJSON.severity = "HIGH";
+    normalizedJSON.severity = "LOW";
     normalizedJSON.event_status = msg?.data?.status;
     normalizedJSON.device_data = msg?.data;
     normalizedJSON.spd_wire = msg?.speed;
@@ -376,7 +370,7 @@ const jsonNormalization = (
   else if (msg.event == "FLS") {
     //Fuel DATA
     normalizedJSON.subevent = "FLS";
-    normalizedJSON.severity = "HIGH";
+    normalizedJSON.severity = "LOW";
     normalizedJSON.device_data = msg?.data;
     normalizedJSON.spd_wire = msg?.speed;
 
@@ -386,7 +380,7 @@ const jsonNormalization = (
   else if (msg.event == "LDS") {
     //Load DATA
     normalizedJSON.subevent = "LDS";
-    normalizedJSON.severity = "HIGH";
+    normalizedJSON.severity = "LOW";
     normalizedJSON.device_data = msg?.Data;
     normalizedJSON.spd_wire = msg.speed;
 

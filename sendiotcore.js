@@ -62,9 +62,11 @@ const sendNormalizedJsonToAwsIotCore = async (normalizedJSON) => {
       if (err) {
         console.error("Error publishing to AWS IoT Core:", err);
         reject(err);
+        return "Error in iot publish";
       } else {
         console.log("Successfully published to AWS IoT Core:", topic, message);
         resolve();
+        return "success in iotcore publish";
       }
     });
   });

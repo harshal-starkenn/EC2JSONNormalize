@@ -1,6 +1,7 @@
 const { client } = require("./mqtt");
 const { jsonNormalization } = require("./normalized");
 const { setRedisData, getRedisData, deleteRedisData } = require("./redisCrud");
+const { updateRedisData } = require("./redisUpdate");
 const { sendNormalizedJsonToAwsIotCore } = require("./sendiotcore");
 
 const express = require("express");
@@ -27,12 +28,16 @@ const mqttTrigger = () => {
     try {
       if (message) {
         setTimeout(() => {
-          console.log("message:::::", message.toString());
+          // console.log("message:::::", message.toString());
         }, 5000);
 
         let normalizedJSON = await jsonNormalization(message.toString());
 
         if (normalizedJSON !== "INVALID_JSON") {
+          //update the data on redis
+
+          // let x = await updateRedisData(normalizedJSON);
+
           //function to send data on iot core
           let iotcoredata = await sendNormalizedJsonToAwsIotCore(
             normalizedJSON

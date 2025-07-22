@@ -6,7 +6,7 @@ const updateRedisData = async (normalizedJSON) => {
 
   try {
     await axios
-      .get(`http://13.204.85.8:5001/get-redis-data/${normalizedJSON.HMI_ID}`)
+      .get(`http://65.1.22.102:5001/get-redis-data/${normalizedJSON.HMI_ID}`)
       .then((res) => {
         redisPayload = JSON.parse(res.data.data);
       })
@@ -34,7 +34,7 @@ const updateRedisData = async (normalizedJSON) => {
 
     try {
       let updateRedisApi = await axios.post(
-        "http://13.204.85.8:5001/set-redis-data",
+        "http://65.1.22.102:5001/set-redis-data",
         redisPayload,
         {
           headers: { "Content-Type": "application/json" },

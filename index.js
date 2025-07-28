@@ -4,9 +4,10 @@ const { normalizedJSON2 } = require("./normalizedJSON2");
 const { setRedisData, getRedisData, deleteRedisData } = require("./redisCrud");
 const { sendNormalizedJsonToAwsIotCore } = require("./sendiotcore");
 const express = require("express");
-const http = require("http");
+const { createServer } = require("https");
 const { Server } = require("socket.io");
 const cors = require("cors");
+const fs = require("fs");
 
 // Initialize Express app
 const app = express();
@@ -15,9 +16,19 @@ const port = 5001;
 app.use(cors());
 app.use(express.json());
 
-const server = http.createServer(app);
+// const server = http.createServer(app);\
+const httpServer = createServer(
+  {
+    key: fs.readFileSync("./privkey.pem", "utf8"),
+    cert: fs.readFileSync("./cert.pem", "utf8"),
+    ca: fs.readFileSync("./chain.pem", "utf8"),
+    requestCert: false,
+    rejectUnauthorized: false,
+  },
+  app
+);
 
-const io = new Server(server, {
+const io = new Server(httpServer, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
@@ -179,6 +190,6 @@ app.post("/publishToSocket", (req, res) => {
 });
 
 // Start the server and listen for incoming requests
-server.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });

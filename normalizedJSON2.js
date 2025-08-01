@@ -36,7 +36,7 @@ const normalizedJSON2 = async (msg) => {
       igs: msg?.ignition || "0",
       msg_no: msg?.msg || "0",
       event: msg?.event || "INVALIDJSON",
-      subevent: "ALERT",
+      subevent: msg?.event || "ALERT",
       severity: msg?.data?.severity || "HIGH",
       reason: "Event Alert",
       event_status: "0",
@@ -302,6 +302,33 @@ const normalizedJSON2 = async (msg) => {
         normalizedJSON.media.inCabin = msg?.data?.media;
 
         return JSON.stringify(normalizedJSON);
+      } else if (msg?.data?.alert_type == "SMOKING") {
+        normalizedJSON.subevent = "SMO";
+        normalizedJSON.severity = "LOW";
+        normalizedJSON.spd_wire = msg?.data?.spd;
+        normalizedJSON.device_data = msg?.data || {};
+        normalizedJSON.media.dashCam = msg?.data?.dashcam;
+        normalizedJSON.media.inCabin = msg?.data?.media;
+
+        return JSON.stringify(normalizedJSON);
+      } else if (msg?.data?.alert_type == "YAWNING") {
+        normalizedJSON.subevent = "YWN";
+        normalizedJSON.severity = "LOW";
+        normalizedJSON.spd_wire = msg?.data?.spd;
+        normalizedJSON.device_data = msg?.data || {};
+        normalizedJSON.media.dashCam = msg?.data?.dashcam;
+        normalizedJSON.media.inCabin = msg?.data?.media;
+
+        return JSON.stringify(normalizedJSON);
+      } else if (msg?.data?.alert_type == "USING_PHONE") {
+        normalizedJSON.subevent = "PHO";
+        normalizedJSON.severity = "LOW";
+        normalizedJSON.spd_wire = msg?.data?.spd;
+        normalizedJSON.device_data = msg?.data || {};
+        normalizedJSON.media.dashCam = msg?.data?.dashcam;
+        normalizedJSON.media.inCabin = msg?.data?.media;
+
+        return JSON.stringify(normalizedJSON);
       } else {
         return JSON.stringify(normalizedJSON);
       }
@@ -350,20 +377,20 @@ const normalizedJSON2 = async (msg) => {
     ////////////////////////////////////   FLS  //////////////////////////////////////////////////
     else if (msg.event == "FLS") {
       //Fuel DATA
-      // normalizedJSON.subevent = "FLS";
-      // normalizedJSON.severity = "LOW";
-      // normalizedJSON.device_data = msg?.data;
-      // normalizedJSON.spd_wire = msg?.speed;
+      normalizedJSON.subevent = "FLS";
+      normalizedJSON.severity = "LOW";
+      normalizedJSON.device_data = msg?.data;
+      normalizedJSON.spd_wire = msg?.speed;
 
       return JSON.stringify(normalizedJSON);
     }
     ////////////////////////////////////    LDS   /////////////////////////////////////////////////////
     else if (msg.event == "LDS") {
       //Load DATA
-      // normalizedJSON.subevent = "LDS";
-      // normalizedJSON.severity = "LOW";
-      // normalizedJSON.device_data = msg?.Data;
-      // normalizedJSON.spd_wire = msg.speed;
+      normalizedJSON.subevent = "LDS";
+      normalizedJSON.severity = "LOW";
+      normalizedJSON.device_data = msg?.Data;
+      normalizedJSON.spd_wire = msg.speed;
 
       return JSON.stringify(normalizedJSON);
     }
@@ -390,8 +417,8 @@ const normalizedJSON2 = async (msg) => {
       return JSON.stringify(normalizedJSON);
     }
     ////////////////////////////////////  Alcohol Feature set acknowledgemen SET   /////////////////////////////
-    else if (msg.event == "AL") {
-      normalizedJSON.subevent = "AL";
+    else if (msg.event == "SET") {
+      normalizedJSON.subevent = "SET";
       normalizedJSON.severity = "HIGH";
       normalizedJSON.device_data = msg?.data;
       normalizedJSON.event_status = msg?.data?.sts;

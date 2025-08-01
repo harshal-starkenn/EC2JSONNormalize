@@ -40,7 +40,7 @@ const jsonNormalization = (msg) => {
       igs: msg?.ignition || "0",
       msg_no: msg?.message || "0",
       event: msg?.event || "INVALIDJSON",
-      subevent: "ALERT",
+      subevent: msg?.event || "ALERT",
       severity: "HIGH",
       reason: "Event Alert",
       event_status: "0",
@@ -297,6 +297,33 @@ const jsonNormalization = (msg) => {
         return JSON.stringify(normalizedJSON);
       } else if (msg?.data?.alert_type == "TRIP_START") {
         normalizedJSON.subevent = "TS";
+        normalizedJSON.severity = "LOW";
+        normalizedJSON.spd_wire = msg?.data?.speed;
+        normalizedJSON.device_data = msg?.data || {};
+        normalizedJSON.media.dashCam = msg?.data?.dashcam;
+        normalizedJSON.media.inCabin = msg?.data?.media;
+
+        return JSON.stringify(normalizedJSON);
+      } else if (msg?.data?.alert_type == "SMOKING") {
+        normalizedJSON.subevent = "SMO";
+        normalizedJSON.severity = "LOW";
+        normalizedJSON.spd_wire = msg?.data?.speed;
+        normalizedJSON.device_data = msg?.data || {};
+        normalizedJSON.media.dashCam = msg?.data?.dashcam;
+        normalizedJSON.media.inCabin = msg?.data?.media;
+
+        return JSON.stringify(normalizedJSON);
+      } else if (msg?.data?.alert_type == "YAWNING") {
+        normalizedJSON.subevent = "YWN";
+        normalizedJSON.severity = "HIGH";
+        normalizedJSON.spd_wire = msg?.data?.speed;
+        normalizedJSON.device_data = msg?.data || {};
+        normalizedJSON.media.dashCam = msg?.data?.dashcam;
+        normalizedJSON.media.inCabin = msg?.data?.media;
+
+        return JSON.stringify(normalizedJSON);
+      } else if (msg?.data?.alert_type == "USING_PHONE") {
+        normalizedJSON.subevent = "PHO";
         normalizedJSON.severity = "LOW";
         normalizedJSON.spd_wire = msg?.data?.speed;
         normalizedJSON.device_data = msg?.data || {};

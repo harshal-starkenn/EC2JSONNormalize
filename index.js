@@ -12,11 +12,9 @@ const fs = require("fs");
 // Initialize Express app
 const app = express();
 const port = 5001;
-
 app.use(cors());
 app.use(express.json());
 
-// const server = http.createServer(app);\
 const httpServer = createServer(
   {
     key: fs.readFileSync("./privkey.pem", "utf8"),
@@ -35,33 +33,11 @@ const io = new Server(httpServer, {
   },
 });
 
-/////////////////SOCKET -- Connection//////////////////////////////
 io.on("connection", (socket) => {
-  console.log(`User Connected: ${socket.id}`);
-
-  socket.on("joinTopic", (topic) => {
-    socket.join(topic);
-    console.log(`User ${socket.id} joined topic: ${topic}`);
-    socket.emit("joinedTopicConfirmation", `You have joined topic: ${topic}`);
-  });
-
-  socket.on("publishToTopic", ({ topic, message }) => {
-    if (!topic || !message) {
-      console.warn(`Invalid 'publishToTopic' payload from ${socket.id}:`, {
-        topic,
-        message,
-      });
-      return;
-    }
-    console.log(
-      `Message received from ${socket.id} for topic '${topic}': ${message}`
-    );
-
-    io.to(topic).emit("newMessage", { topic, message });
-  });
+  console.log("User connected");
 
   socket.on("disconnect", () => {
-    console.log(`User Disconnected: ${socket.id}`);
+    console.log("User disconnected");
   });
 });
 
@@ -76,29 +52,51 @@ const mqttTrigger = () => {
         console.log("Subscribed to the topic");
       }
     });
-  });
+  }); //////////////////////  Mqtt message sent to iotcore ///////////////////////////// // Event listener for incoming MQTT messages
 
-  //////////////////////  Mqtt message sent to iotcore /////////////////////////////
-  // Event listener for incoming MQTT messages
   client.on("message", async (topic, message) => {
     try {
       if (message) {
         setTimeout(() => {
           // console.log("message:::::", message.toString());
         }, 5000);
-
         let mqttmsg = JSON.parse(message.toString());
-
-        let normalizedJSON;
-        // Check message version for different normalization protocols
+        let normalizedJSON; // Check message version for different normalization protocols
         if (mqttmsg?.ver === "JSON_2.0") {
           // Normalize using protocol 2.0
           normalizedJSON = await normalizedJSON2(mqttmsg);
+
+          const eventName = JSON.parse(normalizedJSON).HMI_ID;
+
+          io.timeout(5000).emit(eventName, normalizedJSON, (err, responses) => {
+            if (err) {
+              // some clients did not acknowledge the event in the given delay
+              console.error(
+                `Emit to event '${eventName}' timed out or failed.`
+              );
+            } else {
+              // all clients responded with an acknowledgment
+              console.log(`Successfully emitted data on event '${eventName}'.`);
+            }
+          });
 
           await sendNormalizedJsonToAwsIotCore(normalizedJSON);
         } else {
           // Protocol document 1 message normalization
           normalizedJSON = await jsonNormalization(mqttmsg);
+          const eventName = JSON.parse(normalizedJSON).HMI_ID;
+
+          io.timeout(5000).emit(eventName, normalizedJSON, (err, responses) => {
+            if (err) {
+              // some clients did not acknowledge the event in the given delay
+              console.error(
+                `Emit to event '${eventName}' timed out or failed.`
+              );
+            } else {
+              // all clients responded with an acknowledgment
+              console.log(`Successfully emitted data on event '${eventName}'.`);
+            }
+          });
           await sendNormalizedJsonToAwsIotCore(normalizedJSON);
         }
       }
@@ -155,37 +153,6 @@ app.delete("/delete-redis-data/:key", async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to delete data in redis!!", error: err });
-  }
-});
-
-/////////////////////////  Socket message publish api  ///////////////////////
-
-app.post("/publishToSocket", (req, res) => {
-  const { topic, message } = req.body;
-
-  if (!topic || !message) {
-    return res
-      .status(400)
-      .json({ error: "Topic and message are required in the request body." });
-  }
-
-  try {
-    const stringifiedMessage =
-      typeof message === "object" ? JSON.stringify(message) : message;
-
-    io.to(topic).emit("newMessage", { topic, message: stringifiedMessage });
-    console.log(
-      `HTTP POST: Published message to topic '${topic}': ${stringifiedMessage}`
-    );
-
-    res
-      .status(200)
-      .json({ success: true, message: "Message published successfully." });
-  } catch (error) {
-    console.error("Error publishing message via HTTP POST:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to publish message.", details: error.message });
   }
 });
 

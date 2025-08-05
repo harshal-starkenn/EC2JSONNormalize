@@ -8,6 +8,7 @@ const { createServer } = require("https");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const fs = require("fs");
+const { normalizedJSON3 } = require("./normalizeJSON3");
 
 // Initialize Express app
 const app = express();
@@ -65,6 +66,25 @@ const mqttTrigger = () => {
         if (mqttmsg?.ver === "JSON_2.0") {
           // Normalize using protocol 2.0
           normalizedJSON = await normalizedJSON2(mqttmsg);
+
+          const eventName = JSON.parse(normalizedJSON).HMI_ID;
+
+          io.timeout(5000).emit(eventName, normalizedJSON, (err, responses) => {
+            if (err) {
+              // some clients did not acknowledge the event in the given delay
+              console.error(
+                `Emit to event '${eventName}' timed out or failed.`
+              );
+            } else {
+              // all clients responded with an acknowledgment
+              console.log(`Successfully emitted data on event '${eventName}'.`);
+            }
+          });
+
+          await sendNormalizedJsonToAwsIotCore(normalizedJSON);
+        } else if (mqttmsg?.ver === "MSIL_DMS") {
+          // Normalize using protocol 3.0 MSIL JSON
+          normalizedJSON = await normalizedJSON3(mqttmsg);
 
           const eventName = JSON.parse(normalizedJSON).HMI_ID;
 

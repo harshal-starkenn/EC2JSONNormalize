@@ -1,22 +1,5 @@
-const normalizedJSON2 = async (msg) => {
+const normalizedJSON3 = async (msg) => {
   try {
-    if (
-      msg.td &&
-      msg.td.lat &&
-      msg.td.lng &&
-      (msg.td.lat == 0 ||
-        msg.td.lng == 0 ||
-        msg.td.lat == 999 ||
-        msg.td.lng == 999 ||
-        msg.td.lat == null ||
-        msg.td.lng == null ||
-        msg.dev_id === "EC0000A")
-    ) {
-      console.log(msg.device_id, msg.td.lng, msg.td.lat);
-
-      return "INVALID_JSON";
-    }
-
     //Normalized JSON Format
     let normalizedJSON = {
       HMI_ID: msg.dev_id || "STARK1",
@@ -440,4 +423,4 @@ const normalizedJSON2 = async (msg) => {
   }
 };
 
-module.exports = { normalizedJSON2 };
+module.exports = { normalizedJSON3 };

@@ -407,7 +407,7 @@ const jsonNormalization = (msg) => {
       //Load DATA
       normalizedJSON.subevent = "LDS";
       normalizedJSON.severity = "LOW";
-      normalizedJSON.device_data = msg.Data;
+      normalizedJSON.device_data = msg.data;
       normalizedJSON.spd_wire = msg.speed;
 
       return JSON.stringify(normalizedJSON);
